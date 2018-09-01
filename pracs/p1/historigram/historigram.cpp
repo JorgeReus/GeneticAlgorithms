@@ -39,24 +39,22 @@ void printHistogram(int arr[], int n)
     	gfx_clear();
 		drawPlotFrame();
  		char str[12] = {'\0'};
-    	for(int i=0, barPos=delta; i < n; i++)
+    	for(int i=1, barPos=delta; i <= n; i++)
  		{
-			sprintf(str, "%d", arr[i]);
-			if (maxElement == arr[i]) {
- 				gfx_line(barPos, x, barPos, plotPadding);
-				gfx_color(9, 71, 122);
- 				gfx_text(barPos, plotPadding - 10, str);
-				gfx_color(0, 200, 100);
-			} else {
-				unsigned long long yBar = x - 
-				(((double)arr[i] * (plotH - 2*plotPadding) / (double)maxElement));
-				gfx_line(barPos, x, barPos, yBar);
-				gfx_color(9, 71, 122);
-				gfx_text(barPos, yBar - 10, str);
-				gfx_color(0, 200, 100);
+			unsigned long long yBar = plotPadding;
+			sprintf(str, "%d", arr[i-1]);
+			if (maxElement != arr[i-1]) {
+				yBar = x - (((double)arr[i-1] * (plotH - 2*plotPadding) / (double)maxElement));
 			}
- 			sprintf(str, "%d", i + 1);
- 			gfx_text(barPos, plotH-plotPadding + 20 , str);
+			// Y text
+			gfx_color(9, 71, 122);
+			gfx_text(barPos, yBar - 10, str);
+			gfx_color(0, 200, 100);
+			// Bar
+			gfx_line(barPos, x, barPos, yBar);
+			// X text
+ 			sprintf(str, "%d", i);
+ 			gfx_text(barPos, plotH - plotPadding + 20 , str);
  			barPos+=barPadding;
  		}
  		if(gfx_event_waiting()){
