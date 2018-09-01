@@ -3,7 +3,12 @@
 #include <iostream>
 #include <cstdlib>
 #include <vector>
+#include <locale>
+#include <string>
+#include <sstream>
+#include<iomanip>
 #include <bits/stdc++.h>
+
 
 // Window Size
 const int windowH = 750;
@@ -18,6 +23,15 @@ const int plotCy = plotH/2;
 const int x = plotH - plotPadding;
 
 using namespace std;
+
+struct myseps : numpunct<char> { 
+   // use ' as separator
+   char do_thousands_sep() const { return ','; } 
+
+   // digits are grouped by 3
+   string do_grouping() const { return "\3"; }
+};
+
 void drawPlotFrame() {
 	gfx_color(9, 71, 122);
 	gfx_point(plotCx, plotCy);
@@ -27,6 +41,7 @@ void drawPlotFrame() {
 	gfx_line(plotPadding*2, plotPadding, plotPadding*2, plotH);
 	gfx_color(0, 200, 100);
 }
+
 
 void printHistogram(int arr[], int n)
 {
@@ -53,10 +68,14 @@ void printHistogram(int arr[], int n)
  		char str[12] = {'\0'};
     	for(int i=1; i <= n; i++)
  		{
-			sprintf(str, "%d", arr[i-1]);
+ 			stringstream ss;
+			ss.imbue(locale(locale(), new myseps));
+			ss << arr[i-1];  // printing to string stream with formating
+			sprintf(str, "%s", ss.str().c_str());
 			// Y text
 			gfx_color(9, 71, 122);
 			gfx_text(get<0>(points[i-1]),  get<1>(points[i-1]) - 10, str);
+			gfx_circle(get<0>(points[i-1]), get<1>(points[i-1]), 3);
 			gfx_color(0, 200, 100);
 			// Bar
 			gfx_line(get<0>(points[i-1]), x, get<0>(points[i-1]), get<1>(points[i-1]));
@@ -77,7 +96,6 @@ void printHistogram(int arr[], int n)
     }
 }
 
-
 int main(int argc, char *argv[])
 {
 	int n = 10;
@@ -87,7 +105,7 @@ int main(int argc, char *argv[])
 	srand(time(0));
 	int arr[n];
 	for(int i=0; i < n; i++) {
-		arr[i] = rand() % (100 + 1) + 1;
+		arr[i] = rand()% (1000 - 1) + 1;
 	}
     printHistogram(arr, n);
     return 0;
