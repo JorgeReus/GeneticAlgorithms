@@ -35,27 +35,38 @@ void printHistogram(int arr[], int n)
 	int barPadding = (plotW - plotPadding*3)/n;
  	int delta = barPadding + plotPadding*2;
 	int maxElement = *max_element(arr, arr + n);
+	char str[12] = {'\0'};
+	vector <tuple<int, int> > points;
+	// Calculate points
+	for(int i=0, barPos=delta; i < n; i++)
+	{
+		int yBar = plotPadding;
+		if (maxElement != arr[i]) {
+			yBar = x - (((double)arr[i] * (plotH - 2*plotPadding) / (double)maxElement));
+		}
+		points.push_back(tuple<int, int>(barPos, (int)yBar));
+		barPos+=barPadding;
+	}
     while(1) {
     	gfx_clear();
 		drawPlotFrame();
  		char str[12] = {'\0'};
-    	for(int i=1, barPos=delta; i <= n; i++)
+    	for(int i=1; i <= n; i++)
  		{
-			unsigned long long yBar = plotPadding;
 			sprintf(str, "%d", arr[i-1]);
-			if (maxElement != arr[i-1]) {
-				yBar = x - (((double)arr[i-1] * (plotH - 2*plotPadding) / (double)maxElement));
-			}
 			// Y text
 			gfx_color(9, 71, 122);
-			gfx_text(barPos, yBar - 10, str);
+			gfx_text(get<0>(points[i-1]),  get<1>(points[i-1]) - 10, str);
 			gfx_color(0, 200, 100);
 			// Bar
-			gfx_line(barPos, x, barPos, yBar);
+			gfx_line(get<0>(points[i-1]), x, get<0>(points[i-1]), get<1>(points[i-1]));
 			// X text
  			sprintf(str, "%d", i);
- 			gfx_text(barPos, plotH - plotPadding + 20 , str);
- 			barPos+=barPadding;
+ 			gfx_text(get<0>(points[i-1]), plotH - plotPadding + 20 , str);
+			// Lines
+			if (i < n) {
+				gfx_line(get<0>(points[i-1]), get<1>(points[i-1]), get<0>(points[i]), get<1>(points[i]));
+			}
  		}
  		if(gfx_event_waiting()){
  			if(gfx_wait() == 'q'){
