@@ -4,29 +4,29 @@
 \maketitle
 \tableofcontents
 \section{Introducción}
-Un historigrama es una representación gráfica de una variable en forma de barras, donde la superficie de cada barra es proporcional a la frecuencia de los valores representados. Con base en este definición se realizó un programa el cual grafica un historigrama con base en un arreglo de números aleatorios.
+La representación del individuo es el primer componente del algoritmo genético, el cual representa soluciones potenciales al problema. La representación más tradicional es la binaria, la cual fue propouesta por Holland ya que tenía un grado elevado de paralelismo implícito, pero esta implica varias desventajas para dar soluciones para problemas del mundo real, por ende se han creado diferentes representaciones como la binaria la real y la de gray.
 \section{Contenido}
-\subsection{Ejemplo 1}
-Ejecución: \textit{make \&\& ./historigram}
+\subsection{Ejemplo de representación binaria}
 \begin{figure}[h!]
 	\centering
-	\caption{Ejemplo 1}
-	\includegraphics[scale=.35]{pantalla1}
+	\includegraphics[scale=.6]{binary}
 \end{figure}
-\newline
-En este ejemplo se muestra el historigrama del arreglo: \textit{\{53, 56, 68, 54, 55, 15, 89, 81, 21, 36\}}\\
-El programa por defecto crea un arreglo de 10 números aleatorios.
-\subsection{Ejemplo 2}
-Ejecución: \textit{make \&\& ./historigram 20}\\
+\newpage
+\subsection{Ejemplo de representación en código gray}
 \begin{figure}[h!]
 	\centering
-	\caption{Ejemplo 2}
-	\includegraphics[scale=.35]{pantalla2}
+	\includegraphics[scale=.7]{gray}
 \end{figure}
-\newline
-En este ejemplo se muestra el historigrama del arreglo: \textit{\{362, 441, 850, 228, 290, 457, 941, 849, 243, 945, 152, 325, 634, 334, 260, 207, 510, 858, 740, 278\}}\\
-Se le dió un argument extra al programa que indica el número de elementos en el arreglo.\\\\
-En ambos ejemplos los números aleatorios se generaron en nu rango del 1 al 1000.
+\subsection{Ejemplo de representación real}
+\begin{figure}[h!]
+	\centering
+	\includegraphics[scale=.5]{real}
+\end{figure}
+\subsection{Ejemplo de representación entera}
+\begin{figure}[h!]
+	\centering
+	\includegraphics[scale=.7]{integer}
+\end{figure}
 \section{Conclusión}
-Mediante un historigrama se pueden representar visualmente datos, lo cual hace que sea más fácil interpretar resultados y compartilos.
+Las diferentes representaciones tienen sus ``tradeoffs'', dependiendo del problema a resolver se elige una de ellas.
 \end{document}
