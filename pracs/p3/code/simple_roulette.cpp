@@ -1,7 +1,13 @@
-#include <iostream>
-#include <iomanip>
-#include <cstdlib>
+#include "gfx.h"
 #include <cmath>
+#include <unistd.h>
+#include <iostream>
+#include <cstdlib>
+#include <vector>
+#include <locale>
+#include <string>
+#include <sstream>
+#include <iomanip>
 #include <bits/stdc++.h>
 
 using namespace std;
@@ -11,6 +17,90 @@ const int MIN_INDIVIDUAL_SIZE = 0;
 const int POPULATION_BITS = 5;
 const int MUTATION_PROBABILITY = 10;
 const int CROSS_POS = 4;
+const int NUM_GENERATIONS = 5;
+// Window Size
+const int windowH = 750;
+const int windowW = 1420;
+// Plot Size
+const int plotPadding = 70;
+const int plotH = windowH - plotPadding;
+const int plotW = windowW - plotPadding;
+const int plotCx = plotW/2;
+const int plotCy = plotH/2;
+// Axis Position
+const int x = plotH - plotPadding;
+
+struct myseps : numpunct<char> { 
+   // use ' as separator
+   char do_thousands_sep() const { return ','; } 
+
+   // digits are grouped by 3
+   string do_grouping() const { return "\3"; }
+};
+
+void drawPlotFrame() {
+	gfx_color(9, 71, 122);
+	gfx_point(plotCx, plotCy);
+	// X-Axis
+	gfx_line(plotPadding, x, plotW - plotPadding, x);
+	// Y-Axis
+	gfx_line(plotPadding*2, plotPadding, plotPadding*2, plotH);
+	gfx_color(0, 200, 100);
+}
+
+
+void printHistogram(int arr[], int n)
+{
+	gfx_open(windowW, windowH, "Historigrama");
+	gfx_color(0, 200, 100);
+	int barPadding = (plotW - plotPadding*3)/n;
+ 	int delta = barPadding + plotPadding*2;
+	int maxElement = *max_element(arr, arr + n);
+	char str[12] = {'\0'};
+	vector <tuple<int, int> > points;
+	// Calculate points
+	for(int i=0, barPos=delta; i < n; i++)
+	{
+		int yBar = plotPadding;
+		if (maxElement != arr[i]) {
+			yBar = x - (((double)arr[i] * (plotH - 2*plotPadding) / (double)maxElement));
+		}
+		points.push_back(tuple<int, int>(barPos, (int)yBar));
+		barPos+=barPadding;
+	}
+    while(1) {
+    	gfx_clear();
+		drawPlotFrame();
+ 		char str[12] = {'\0'};
+    	for(int i=1; i <= n; i++)
+ 		{
+ 			stringstream ss;
+			ss.imbue(locale(locale(), new myseps));
+			ss << arr[i-1];  // printing to string stream with formating
+			sprintf(str, "%s", ss.str().c_str());
+			// Y text
+			gfx_color(9, 71, 122);
+			gfx_text(get<0>(points[i-1]),  get<1>(points[i-1]) - 10, str);
+			gfx_circle(get<0>(points[i-1]), get<1>(points[i-1]), 3);
+			gfx_color(0, 200, 100);
+			// Bar
+			gfx_line(get<0>(points[i-1]), x, get<0>(points[i-1]), get<1>(points[i-1]));
+			// X text
+ 			sprintf(str, "%d", i);
+ 			gfx_text(get<0>(points[i-1]), plotH - plotPadding + 20 , str);
+			// Lines
+			if (i < n) {
+				gfx_line(get<0>(points[i-1]), get<1>(points[i-1]), get<0>(points[i]), get<1>(points[i]));
+			}
+ 		}
+ 		if(gfx_event_waiting()){
+ 			if(gfx_wait() == 'q'){
+ 				break;
+ 			}
+ 		}
+		usleep(41666); //24 por segundo
+    }
+}
 
 unsigned int get_value(bitset<POPULATION_BITS>& p) {
     return (unsigned int)(p.to_ulong());
@@ -62,8 +152,20 @@ bitset<POPULATION_BITS> mutate(bitset<POPULATION_BITS> individual) {
     return mutated_individual;
 }
 
+unsigned int find_max(bitset<POPULATION_BITS> population[]) {
+    unsigned int max = 0;
+    for(int i = 0; i < POPULATION_SIZE; i++) {
+        unsigned int value = (unsigned int)population[i].to_ulong();
+        if (value > max) {
+            max = value;
+        }
+    }
+    return max;
+}
+
 int main(int argc, char *argv[]) {
     srand(time(0));
+    int max_values[NUM_GENERATIONS]; 
 	bitset<POPULATION_BITS> initial_population[POPULATION_SIZE];
     bitset<POPULATION_BITS> descendancy[POPULATION_SIZE];
     unsigned int total = 0;
@@ -80,7 +182,7 @@ int main(int argc, char *argv[]) {
         total += aptitude; 
     }
 
-    for (int j = 0; j < 10; j++) {
+    for (int j = 0; j < NUM_GENERATIONS; j++) {
         // Parent Selection
         for (int i = 0; i < POPULATION_SIZE; i++) {
             descendancy[i] = roulette_selection(initial_population, total);
@@ -126,9 +228,12 @@ int main(int argc, char *argv[]) {
         // Next Generation
         for (int i = 0; i < POPULATION_SIZE; i++) {
             initial_population[i] = descendancy[i];
-            cout << descendancy[i] << endl;
+            // cout << descendancy[i] << endl;
         }
-        cout << endl << endl;
+        // cout << endl << endl;
+        max_values[j] = find_max(initial_population);
+        cout << max_values[j] << endl;
     }
+    printHistogram(max_values, NUM_GENERATIONS);
     return 0;
 }
