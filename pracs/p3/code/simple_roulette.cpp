@@ -49,21 +49,21 @@ void drawPlotFrame() {
 }
 
 
-void printHistogram(int arr[], int n)
+void printHistogram(int max_values[], int min_values[], int n)
 {
 	gfx_open(windowW, windowH, "Historigrama");
 	gfx_color(0, 200, 100);
 	int barPadding = (plotW - plotPadding*3)/n;
  	int delta = barPadding + plotPadding*2;
-	int maxElement = *max_element(arr, arr + n);
+	int maxElement = *max_element(max_values, max_values + n);
 	char str[12] = {'\0'};
 	vector <tuple<int, int> > points;
 	// Calculate points
 	for(int i=0, barPos=delta; i < n; i++)
 	{
 		int yBar = plotPadding;
-		if (maxElement != arr[i]) {
-			yBar = x - (((double)arr[i] * (plotH - 2*plotPadding) / (double)maxElement));
+		if (maxElement != max_values[i]) {
+			yBar = x - (((double)max_values[i] * (plotH - 2*plotPadding) / (double)maxElement));
 		}
 		points.push_back(tuple<int, int>(barPos, (int)yBar));
 		barPos+=barPadding;
@@ -76,7 +76,7 @@ void printHistogram(int arr[], int n)
  		{
  			stringstream ss;
 			ss.imbue(locale(locale(), new myseps));
-			ss << arr[i-1];  // printing to string stream with formating
+			ss << max_values[i-1];  // printing to string stream with formating
 			sprintf(str, "%s", ss.str().c_str());
 			// Y text
 			gfx_color(9, 71, 122);
@@ -142,7 +142,7 @@ bool has_mutation(unsigned int mutations[], int num_individual, unsigned int num
 bitset<POPULATION_BITS> mutate(bitset<POPULATION_BITS> individual) {
     bitset<POPULATION_BITS> mutated_individual = individual;
     for (int i = 0; i < individual.size(); i++) {
-        bool value = rand() % (2);
+        bool value = rand() % (100) < MUTATION_PROBABILITY;
         if (value == false) {
             continue;
         } else {
@@ -163,9 +163,21 @@ unsigned int find_max(bitset<POPULATION_BITS> population[]) {
     return max;
 }
 
+unsigned int find_min(bitset<POPULATION_BITS> population[], unsigned int max) {
+    unsigned int min = max;
+    for(int i = 0; i < POPULATION_SIZE; i++) {
+        unsigned int value = (unsigned int)population[i].to_ulong();
+        if (value < min) {
+            min = value;
+        }
+    }
+    return min;
+}
+
 int main(int argc, char *argv[]) {
     srand(time(0));
-    int max_values[NUM_GENERATIONS]; 
+    int max_values[NUM_GENERATIONS];
+    int min_values[NUM_GENERATIONS]; 
 	bitset<POPULATION_BITS> initial_population[POPULATION_SIZE];
     bitset<POPULATION_BITS> descendancy[POPULATION_SIZE];
     unsigned int total = 0;
@@ -232,8 +244,10 @@ int main(int argc, char *argv[]) {
         }
         // cout << endl << endl;
         max_values[j] = find_max(initial_population);
-        cout << max_values[j] << endl;
+        min_values[j] = find_min(initial_population, max_values[j]);
+        cout << max_values[j] << " - " << min_values[j] << endl;
     }
-    printHistogram(max_values, NUM_GENERATIONS);
+    // printHistogram(max_values, min_values, NUM_GENERATIONS);
+    printHistogram(min_values, max_values, NUM_GENERATIONS);
     return 0;
 }
