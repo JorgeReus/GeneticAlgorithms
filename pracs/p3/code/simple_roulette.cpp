@@ -56,8 +56,10 @@ void printHistogram(int max_values[], int min_values[], int n)
 	int barPadding = (plotW - plotPadding*3)/n;
  	int delta = barPadding + plotPadding*2;
 	int maxElement = *max_element(max_values, max_values + n);
+    int maxElement_min = *max_element(min_values, min_values + n);
 	char str[12] = {'\0'};
 	vector <tuple<int, int> > points;
+    vector <tuple<int, int> > points_m;
 	// Calculate points
 	for(int i=0, barPos=delta; i < n; i++)
 	{
@@ -66,6 +68,16 @@ void printHistogram(int max_values[], int min_values[], int n)
 			yBar = x - (((double)max_values[i] * (plotH - 2*plotPadding) / (double)maxElement));
 		}
 		points.push_back(tuple<int, int>(barPos, (int)yBar));
+		barPos+=barPadding;
+	}
+
+    for(int i=0, barPos=delta; i < n; i++)
+	{
+		int yBar = plotPadding;
+		if (maxElement_min != min_values[i]) {
+			yBar = x - (((double)min_values[i] * (plotH - 2*plotPadding) / (double)maxElement));
+		}
+		points_m.push_back(tuple<int, int>(barPos, (int)yBar));
 		barPos+=barPadding;
 	}
     while(1) {
@@ -91,6 +103,8 @@ void printHistogram(int max_values[], int min_values[], int n)
 			// Lines
 			if (i < n) {
 				gfx_line(get<0>(points[i-1]), get<1>(points[i-1]), get<0>(points[i]), get<1>(points[i]));
+                gfx_color(255, 0, 0);
+                gfx_line(get<0>(points_m[i-1]), get<1>(points_m[i-1]), get<0>(points_m[i]), get<1>(points_m[i]));
 			}
  		}
  		if(gfx_event_waiting()){
@@ -141,14 +155,8 @@ bool has_mutation(unsigned int mutations[], int num_individual, unsigned int num
 
 bitset<POPULATION_BITS> mutate(bitset<POPULATION_BITS> individual) {
     bitset<POPULATION_BITS> mutated_individual = individual;
-    for (int i = 0; i < individual.size(); i++) {
-        bool value = rand() % (100) < MUTATION_PROBABILITY;
-        if (value == false) {
-            continue;
-        } else {
-            mutated_individual.set(i, value);
-        }
-    }
+    unsigned int value = rand() % (POPULATION_BITS);
+    mutated_individual.set(value, !mutated_individual[value]);
     return mutated_individual;
 }
 
@@ -247,7 +255,7 @@ int main(int argc, char *argv[]) {
         min_values[j] = find_min(initial_population, max_values[j]);
         cout << max_values[j] << " - " << min_values[j] << endl;
     }
-    // printHistogram(max_values, min_values, NUM_GENERATIONS);
-    printHistogram(min_values, max_values, NUM_GENERATIONS);
+    printHistogram(max_values, min_values, NUM_GENERATIONS);
+    // printHistogram(min_values, max_values, NUM_GENERATIONS);
     return 0;
 }
