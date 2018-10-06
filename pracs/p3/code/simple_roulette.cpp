@@ -17,7 +17,6 @@ const int MIN_INDIVIDUAL_SIZE = 0;
 const int POPULATION_BITS = 5;
 const int MUTATION_PROBABILITY = 10;
 const int CROSS_POS = 4;
-const int NUM_GENERATIONS = 5;
 // Window Size
 const int windowH = 750;
 const int windowW = 1420;
@@ -74,9 +73,7 @@ void printHistogram(int max_values[], int min_values[], int n)
     for(int i=0, barPos=delta; i < n; i++)
 	{
 		int yBar = plotPadding;
-		if (maxElement_min != min_values[i]) {
-			yBar = x - (((double)min_values[i] * (plotH - 2*plotPadding) / (double)maxElement));
-		}
+		yBar = x - (((double)min_values[i] * (plotH - 2*plotPadding) / (double)maxElement));
 		points_m.push_back(tuple<int, int>(barPos, (int)yBar));
 		barPos+=barPadding;
 	}
@@ -87,12 +84,17 @@ void printHistogram(int max_values[], int min_values[], int n)
     	for(int i=1; i <= n; i++)
  		{
  			stringstream ss;
+            stringstream ss_min;
 			ss.imbue(locale(locale(), new myseps));
 			ss << max_values[i-1];  // printing to string stream with formating
 			sprintf(str, "%s", ss.str().c_str());
 			// Y text
 			gfx_color(9, 71, 122);
 			gfx_text(get<0>(points[i-1]),  get<1>(points[i-1]) - 10, str);
+            ss_min.imbue(locale(locale(), new myseps));
+			ss_min << min_values[i-1];  // printing to string stream with formating
+			sprintf(str, "%s", ss_min.str().c_str());
+            gfx_text(get<0>(points_m[i-1]),  get<1>(points_m[i-1]) - 10, str);
 			gfx_circle(get<0>(points[i-1]), get<1>(points[i-1]), 3);
 			gfx_color(0, 200, 100);
 			// Bar
@@ -104,7 +106,8 @@ void printHistogram(int max_values[], int min_values[], int n)
 			if (i < n) {
 				gfx_line(get<0>(points[i-1]), get<1>(points[i-1]), get<0>(points[i]), get<1>(points[i]));
                 gfx_color(255, 0, 0);
-                gfx_line(get<0>(points_m[i-1]), get<1>(points_m[i-1]), get<0>(points_m[i]), get<1>(points_m[i]));
+                gfx_line(get<0>(points_m[i-1]), get<1>(points_m[i-1]), get<0>(points_m[i]), 
+                get<1>(points_m[i]));
 			}
  		}
  		if(gfx_event_waiting()){
@@ -155,8 +158,12 @@ bool has_mutation(unsigned int mutations[], int num_individual, unsigned int num
 
 bitset<POPULATION_BITS> mutate(bitset<POPULATION_BITS> individual) {
     bitset<POPULATION_BITS> mutated_individual = individual;
-    unsigned int value = rand() % (POPULATION_BITS);
-    mutated_individual.set(value, !mutated_individual[value]);
+    for (int i = 0; i < POPULATION_BITS; i++) {
+        unsigned int value = rand() % (POPULATION_BITS);
+        if (mutated_individual[value] == false) {
+            mutated_individual.set(value, true);
+        }
+    }
     return mutated_individual;
 }
 
@@ -171,8 +178,8 @@ unsigned int find_max(bitset<POPULATION_BITS> population[]) {
     return max;
 }
 
-unsigned int find_min(bitset<POPULATION_BITS> population[], unsigned int max) {
-    unsigned int min = max;
+unsigned int find_min(bitset<POPULATION_BITS> population[]) {
+    unsigned int min = (unsigned int)population[0].to_ulong();
     for(int i = 0; i < POPULATION_SIZE; i++) {
         unsigned int value = (unsigned int)population[i].to_ulong();
         if (value < min) {
@@ -183,6 +190,10 @@ unsigned int find_min(bitset<POPULATION_BITS> population[], unsigned int max) {
 }
 
 int main(int argc, char *argv[]) {
+    int NUM_GENERATIONS = 5;
+    if (argc == 2) {
+        NUM_GENERATIONS = atoi(argv[1]);
+    }
     srand(time(0));
     int max_values[NUM_GENERATIONS];
     int min_values[NUM_GENERATIONS]; 
@@ -204,9 +215,13 @@ int main(int argc, char *argv[]) {
 
     for (int j = 0; j < NUM_GENERATIONS; j++) {
         // Parent Selection
+        max_values[j] = calculate_aptitude(find_max(initial_population));
+        min_values[j] = calculate_aptitude(find_min(initial_population));
         for (int i = 0; i < POPULATION_SIZE; i++) {
+            cout << initial_population[i] << endl;
             descendancy[i] = roulette_selection(initial_population, total);
         }
+        cout << endl << endl; 
 
         // Next Generation
         for (int i = 0; i < POPULATION_SIZE; i++) {
@@ -248,14 +263,8 @@ int main(int argc, char *argv[]) {
         // Next Generation
         for (int i = 0; i < POPULATION_SIZE; i++) {
             initial_population[i] = descendancy[i];
-            // cout << descendancy[i] << endl;
         }
-        // cout << endl << endl;
-        max_values[j] = find_max(initial_population);
-        min_values[j] = find_min(initial_population, max_values[j]);
-        cout << max_values[j] << " - " << min_values[j] << endl;
     }
     printHistogram(max_values, min_values, NUM_GENERATIONS);
-    // printHistogram(min_values, max_values, NUM_GENERATIONS);
     return 0;
 }

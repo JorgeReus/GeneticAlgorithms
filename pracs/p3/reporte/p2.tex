@@ -4,29 +4,36 @@
 \maketitle
 \tableofcontents
 \section{Introducción}
-La representación del individuo es el primer componente del algoritmo genético, el cual representa soluciones potenciales al problema. La representación más tradicional es la binaria, la cual fue propouesta por Holland ya que tenía un grado elevado de paralelismo implícito, pero esta implica varias desventajas para dar soluciones para problemas del mundo real, por ende se han creado diferentes representaciones como la binaria la real y la de gray.
+El algoritmo genético enfatiza la importancia de la cruza y la mutación, al igual que la selección probabilistica.
+En esta práctica se implementó el algoritmo genético más simple:
+\begin{itemize}
+	\item Generar aleatoriamente una población inicial.
+	\item Calcular la aptitud de cada individuo.
+	\item Seleccionar probabilisticamente con base en la aptitud.
+	\item Aplicar cruza y mutación para generar la siguiente población.
+	\item Ciclar hasta que las condiciones finales se cumplan.
+\end{itemize}
+Esta técnica fue propuesta por DeJong [137], y ha sido el método más comúnmente
+usado desde los orígenes de los algoritmos genéticos. El algoritmo es simple, pero
+ineficiente (su complejidad es O(n 2 ). Asimismo, presenta el problema de que el
+individuo menos apto puede ser seleccionado más de una vez.
 \section{Contenido}
-\subsection{Ejemplo de representación binaria}
+\subsection{Algoritmo con 5 generaciones}
 \begin{figure}[h!]
 	\centering
-	\includegraphics[scale=.6]{binary}
+	\includegraphics[scale=.3]{5gen}
 \end{figure}
 \newpage
-\subsection{Ejemplo de representación en código gray}
+\subsection{Algoritmo con 10 generaciones}
 \begin{figure}[h!]
 	\centering
-	\includegraphics[scale=.7]{gray}
+	\includegraphics[scale=.3]{10gen}
 \end{figure}
-\subsection{Ejemplo de representación real}
+\subsection{Algoritmo con 15 generaciones}
 \begin{figure}[h!]
 	\centering
-	\includegraphics[scale=.5]{real}
-\end{figure}
-\subsection{Ejemplo de representación entera}
-\begin{figure}[h!]
-	\centering
-	\includegraphics[scale=.7]{integer}
+	\includegraphics[scale=.3]{15gen}
 \end{figure}
 \section{Conclusión}
-Las diferentes representaciones tienen sus ``tradeoffs'', dependiendo del problema a resolver se elige una de ellas.
+Este algoritmo es el algoritmo genético más simple, pero el más popular.
 \end{document}
