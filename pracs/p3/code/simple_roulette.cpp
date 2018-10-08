@@ -56,10 +56,17 @@ void printHistogram(int max_values[], int min_values[], int n)
  	int delta = barPadding + plotPadding*2;
 	int maxElement = *max_element(max_values, max_values + n);
     int maxElement_min = *max_element(min_values, min_values + n);
+    int average_values[POPULATION_SIZE];
+    // Calculate the average values
+    for (int i = 0; i < POPULATION_SIZE; i++) {
+        average_values[i] = (min_values[i] + max_values[i]) / 2;
+    }
+    int maxElement_average = *max_element(average_values, average_values + n);
 	char str[12] = {'\0'};
 	vector <tuple<int, int> > points;
     vector <tuple<int, int> > points_m;
-	// Calculate points
+    vector <tuple<int, int> > points_av;
+	// Max values graph calculation
 	for(int i=0, barPos=delta; i < n; i++)
 	{
 		int yBar = plotPadding;
@@ -70,11 +77,21 @@ void printHistogram(int max_values[], int min_values[], int n)
 		barPos+=barPadding;
 	}
 
+    // Min values graph calculation
     for(int i=0, barPos=delta; i < n; i++)
 	{
 		int yBar = plotPadding;
 		yBar = x - (((double)min_values[i] * (plotH - 2*plotPadding) / (double)maxElement));
 		points_m.push_back(tuple<int, int>(barPos, (int)yBar));
+		barPos+=barPadding;
+	}
+
+    // Average values graph calculation
+    for(int i=0, barPos=delta; i < n; i++)
+	{
+		int yBar = plotPadding;
+		yBar = x - (((double)average_values[i] * (plotH - 2*plotPadding) / (double)maxElement));
+		points_av.push_back(tuple<int, int>(barPos, (int)yBar));
 		barPos+=barPadding;
 	}
     while(1) {
@@ -85,16 +102,26 @@ void printHistogram(int max_values[], int min_values[], int n)
  		{
  			stringstream ss;
             stringstream ss_min;
+            stringstream ss_average;
+            // Max values text
 			ss.imbue(locale(locale(), new myseps));
 			ss << max_values[i-1];  // printing to string stream with formating
 			sprintf(str, "%s", ss.str().c_str());
-			// Y text
+			// Y text for min values
 			gfx_color(9, 71, 122);
 			gfx_text(get<0>(points[i-1]),  get<1>(points[i-1]) - 10, str);
+            // Min values Text
             ss_min.imbue(locale(locale(), new myseps));
 			ss_min << min_values[i-1];  // printing to string stream with formating
 			sprintf(str, "%s", ss_min.str().c_str());
             gfx_text(get<0>(points_m[i-1]),  get<1>(points_m[i-1]) - 10, str);
+
+            // Average values Text
+            ss_average.imbue(locale(locale(), new myseps));
+			ss_average << average_values[i-1];  // printing to string stream with formating
+			sprintf(str, "%s", ss_average.str().c_str());
+            gfx_text(get<0>(points_av[i-1]),  get<1>(points_av[i-1]) - 10, str);
+
 			gfx_circle(get<0>(points[i-1]), get<1>(points[i-1]), 3);
 			gfx_color(0, 200, 100);
 			// Bar
@@ -104,10 +131,16 @@ void printHistogram(int max_values[], int min_values[], int n)
  			gfx_text(get<0>(points[i-1]), plotH - plotPadding + 20 , str);
 			// Lines
 			if (i < n) {
+                // Max values
 				gfx_line(get<0>(points[i-1]), get<1>(points[i-1]), get<0>(points[i]), get<1>(points[i]));
+                // Min values
                 gfx_color(255, 0, 0);
                 gfx_line(get<0>(points_m[i-1]), get<1>(points_m[i-1]), get<0>(points_m[i]), 
                 get<1>(points_m[i]));
+                // Average values
+                gfx_color(255, 255, 255);
+                gfx_line(get<0>(points_av[i-1]), get<1>(points_av[i-1]), get<0>(points_av[i]), 
+                get<1>(points_av[i]));
 			}
  		}
  		if(gfx_event_waiting()){
