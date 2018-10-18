@@ -167,33 +167,31 @@ void sort_individuals(bitset<POPULATION_BITS> old_population[]) {
     for (int i = 0; i < POPULATION_SIZE; i++) {
         while(true) {
             int position = rand() % (POPULATION_SIZE + 1);
-            if (m.find(i) == m.end()) {
-                m[i] = true;
-                new_population[i] = old_population[i];   
+            if (m.find(position) == m.end()) {
+                m[position] = true;
+                new_population[i] = old_population[position];   
                 break;
-            } else {
-                continue;
-            }             
+            }         
         }
     }
     for (int i = 0; i < POPULATION_SIZE; i++) {
-        new_population[i] = old_population[i];
+        old_population[i] = new_population[i];
     }
 }
 
-bitset<POPULATION_BITS> tournament_selection(bitset<POPULATION_BITS> population[], unsigned int total) {
-    sort_individuals(population);
-
-    float r = rand() % (total + 1);
-    unsigned int sum = 0;
-    int i;
-    for(i=0; i < POPULATION_SIZE && sum < r; i++) {
-        // Evaluation
-        unsigned int value = get_value(population[i]);
-        unsigned int aptitude = calculate_aptitude(value);
-        sum += aptitude;
+bitset<POPULATION_BITS> tournament_selection(bitset<POPULATION_BITS> p1, bitset<POPULATION_BITS> p2) {
+    float flip = (rand()) / static_cast <float> (RAND_MAX);
+    unsigned int aptitude_1 = calculate_aptitude(get_value(p1));
+    unsigned int aptitude_2 = calculate_aptitude(get_value(p2));
+    if (aptitude_1 < aptitude_2 && flip >= 0.70) {
+        return p2;
+    } else if (aptitude_1 < aptitude_2 && flip < 0.70) {
+        return p1;
+    } else if (aptitude_1 > aptitude_2 && flip >= 0.70) {
+        return p1;
+    } else {
+        return p1;
     }
-    return population[i];
 }
 
 bitset<POPULATION_BITS> cross(bitset<POPULATION_BITS> &p1, bitset<POPULATION_BITS> &p2, 
@@ -268,21 +266,30 @@ int main(int argc, char *argv[]) {
         unsigned int aptitude = calculate_aptitude(value);
         total += aptitude; 
     }
-
     for (int j = 0; j < NUM_GENERATIONS; j++) {
         // Parent Selection
         max_values[j] = calculate_aptitude(find_max(initial_population));
         min_values[j] = calculate_aptitude(find_min(initial_population));
-        for (int i = 0; i < POPULATION_SIZE; i++) {
-            cout << initial_population[i] << endl;
-            descendancy[i] = tournament_selection(initial_population, total);
+        sort_individuals(initial_population);
+        for (int i = 0, j = 0; i < POPULATION_SIZE; i+=2, j++) {
+            descendancy[j] = tournament_selection(initial_population[i], initial_population[i + 1]);
+            cout << initial_population[i] << " - " << initial_population[i + 1] 
+            << " = " << descendancy[j] << endl;
         }
-        cout << endl << endl; 
+        sort_individuals(initial_population);
+        for (int i = 0, j = POPULATION_SIZE / 2; i < POPULATION_SIZE; i+=2, j++) {
+            descendancy[j] = tournament_selection(initial_population[i], initial_population[i + 1]);
+            cout << initial_population[i] << " - " << initial_population[i + 1] 
+            << " = " << descendancy[j] << endl;
+        }
 
         // Next Generation
+        cout << endl;
         for (int i = 0; i < POPULATION_SIZE; i++) {
             initial_population[i] = descendancy[i];
+            cout << initial_population[i] << endl;
         }
+        cout << endl;
 
         // Cross and Mutation
         // Mutar aleatoriamente el individuo
@@ -296,11 +303,6 @@ int main(int argc, char *argv[]) {
             // Cross
             descendancy[i] = cross(initial_population[i], initial_population[i + 1], CROSS_POS);
             descendancy[i + 1] = cross(initial_population[i + 1], initial_population[i], CROSS_POS);
-            // cout << initial_population[i] << ":" << initial_population[i].to_ulong()
-            //  << " - " << descendancy[i] 
-            // << ":" <<descendancy[i].to_ulong() << endl;
-            // cout << initial_population[i+1] << ":" << initial_population[i + 1].to_ulong() << " - " << descendancy[i + 1] 
-            // << ":" <<descendancy[i + 1].to_ulong() << endl << endl;
             // Mutation
             if (has_mutation(mutations, i, num_indiv_mutar)) {
                 descendancy[i] = mutate(descendancy[i]);
