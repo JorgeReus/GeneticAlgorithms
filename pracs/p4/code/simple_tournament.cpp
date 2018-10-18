@@ -49,41 +49,41 @@ void drawPlotFrame() {
 }
 
 
-void printHistogram(int max_values[], int min_values[], int n)
+void printHistogram(float max_values[], float min_values[], int n)
 {
 	gfx_open(windowW, windowH, "Historigrama");
 	gfx_color(0, 200, 100);
 	int barPadding = (plotW - plotPadding*3)/n;
  	int delta = barPadding + plotPadding*2;
-	int maxElement = *max_element(max_values, max_values + n);
-    int maxElement_min = *max_element(min_values, min_values + n);
-    int average_values[POPULATION_SIZE];
+	float maxElement = *max_element(max_values, max_values + n);
+    float maxElement_min = *max_element(min_values, min_values + n);
+    float average_values[POPULATION_SIZE];
     // Calculate the average values
     for (int i = 0; i < POPULATION_SIZE; i++) {
         average_values[i] = (min_values[i] + max_values[i]) / 2;
     }
-    int maxElement_average = *max_element(average_values, average_values + n);
+    float maxElement_average = *max_element(average_values, average_values + n);
 	char str[12] = {'\0'};
-	vector <tuple<int, int> > points;
-    vector <tuple<int, int> > points_m;
-    vector <tuple<int, int> > points_av;
+	vector <tuple<float, float> > points;
+    vector <tuple<float, float> > points_m;
+    vector <tuple<float, float> > points_av;
 	// Max values graph calculation
 	for(int i=0, barPos=delta; i < n; i++)
 	{
-		int yBar = plotPadding;
+		float yBar = plotPadding;
 		if (maxElement != max_values[i]) {
 			yBar = x - (((double)max_values[i] * (plotH - 2*plotPadding) / (double)maxElement));
 		}
-		points.push_back(tuple<int, int>(barPos, (int)yBar));
+		points.push_back(tuple<float, float>(barPos, yBar));
 		barPos+=barPadding;
 	}
 
     // Min values graph calculation
     for(int i=0, barPos=delta; i < n; i++)
 	{
-		int yBar = plotPadding;
+		float yBar = plotPadding;
 		yBar = x - (((double)min_values[i] * (plotH - 2*plotPadding) / (double)maxElement));
-		points_m.push_back(tuple<int, int>(barPos, (int)yBar));
+		points_m.push_back(tuple<float, float>(barPos, yBar));
 		barPos+=barPadding;
 	}
 
@@ -92,7 +92,7 @@ void printHistogram(int max_values[], int min_values[], int n)
 	{
 		int yBar = plotPadding;
 		yBar = x - (((double)average_values[i] * (plotH - 2*plotPadding) / (double)maxElement));
-		points_av.push_back(tuple<int, int>(barPos, (int)yBar));
+		points_av.push_back(tuple<float, float>(barPos, yBar));
 		barPos+=barPadding;
 	}
     while(1) {
@@ -126,7 +126,7 @@ void printHistogram(int max_values[], int min_values[], int n)
 			gfx_circle(get<0>(points[i-1]), get<1>(points[i-1]), 3);
 			gfx_color(0, 200, 100);
 			// Bar
-			gfx_line(get<0>(points[i-1]), x, get<0>(points[i-1]), get<1>(points[i-1]));
+			// gfx_line(get<0>(points[i-1]), x, get<0>(points[i-1]), get<1>(points[i-1]));
 			// X text
  			sprintf(str, "%d", i);
  			gfx_text(get<0>(points[i-1]), plotH - plotPadding + 20 , str);
@@ -153,12 +153,12 @@ void printHistogram(int max_values[], int min_values[], int n)
     }
 }
 
-unsigned int get_value(bitset<POPULATION_BITS>& p) {
-    return (unsigned int)(p.to_ulong());
+int get_value(bitset<POPULATION_BITS>& p) {
+    return (int)(p.to_ulong());
 }
 
-unsigned int calculate_aptitude(unsigned int value) {
-    return (unsigned int)pow(value, 2);
+float calculate_aptitude(int value) {
+    return (int)abs((value - 5) / 2 + sin(value));
 }
 
 void sort_individuals(bitset<POPULATION_BITS> old_population[]) {
@@ -181,8 +181,8 @@ void sort_individuals(bitset<POPULATION_BITS> old_population[]) {
 
 bitset<POPULATION_BITS> tournament_selection(bitset<POPULATION_BITS> p1, bitset<POPULATION_BITS> p2) {
     float flip = (rand()) / static_cast <float> (RAND_MAX);
-    unsigned int aptitude_1 = calculate_aptitude(get_value(p1));
-    unsigned int aptitude_2 = calculate_aptitude(get_value(p2));
+    float aptitude_1 = calculate_aptitude(get_value(p1));
+    float aptitude_2 = calculate_aptitude(get_value(p2));
     if (aptitude_1 < aptitude_2 && flip >= 0.70) {
         return p2;
     } else if (aptitude_1 < aptitude_2 && flip < 0.70) {
@@ -201,7 +201,7 @@ bitset<POPULATION_BITS> cross(bitset<POPULATION_BITS> &p1, bitset<POPULATION_BIT
     return child;
 }
 
-bool has_mutation(unsigned int mutations[], int num_individual, unsigned int num_mutations){
+bool has_mutation(int mutations[], int num_individual, int num_mutations){
     for (int i = 0; i < num_mutations; i++) {
         if (mutations[i] == num_individual) {
             return true;
@@ -213,7 +213,7 @@ bool has_mutation(unsigned int mutations[], int num_individual, unsigned int num
 bitset<POPULATION_BITS> mutate(bitset<POPULATION_BITS> individual) {
     bitset<POPULATION_BITS> mutated_individual = individual;
     for (int i = 0; i < POPULATION_BITS; i++) {
-        unsigned int value = rand() % (POPULATION_BITS);
+        int value = rand() % (POPULATION_BITS);
         if (mutated_individual[value] == false) {
             mutated_individual.set(value, true);
         }
@@ -221,10 +221,10 @@ bitset<POPULATION_BITS> mutate(bitset<POPULATION_BITS> individual) {
     return mutated_individual;
 }
 
-unsigned int find_max(bitset<POPULATION_BITS> population[]) {
-    unsigned int max = 0;
+int find_max(bitset<POPULATION_BITS> population[]) {
+    int max = 0;
     for(int i = 0; i < POPULATION_SIZE; i++) {
-        unsigned int value = (unsigned int)population[i].to_ulong();
+        int value = (int)population[i].to_ulong();
         if (value > max) {
             max = value;
         }
@@ -232,10 +232,10 @@ unsigned int find_max(bitset<POPULATION_BITS> population[]) {
     return max;
 }
 
-unsigned int find_min(bitset<POPULATION_BITS> population[]) {
-    unsigned int min = (unsigned int)population[0].to_ulong();
+int find_min(bitset<POPULATION_BITS> population[]) {
+    int min = (int)population[0].to_ulong();
     for(int i = 0; i < POPULATION_SIZE; i++) {
-        unsigned int value = (unsigned int)population[i].to_ulong();
+        int value = (int)population[i].to_ulong();
         if (value < min) {
             min = value;
         }
@@ -249,21 +249,21 @@ int main(int argc, char *argv[]) {
         NUM_GENERATIONS = atoi(argv[1]);
     }
     srand(time(0));
-    int max_values[NUM_GENERATIONS];
-    int min_values[NUM_GENERATIONS]; 
+    float max_values[NUM_GENERATIONS];
+    float min_values[NUM_GENERATIONS]; 
 	bitset<POPULATION_BITS> initial_population[POPULATION_SIZE];
     bitset<POPULATION_BITS> descendancy[POPULATION_SIZE];
-    unsigned int total = 0;
+    int total = 0;
 
     // Initialization, evaluation
     for (int i = 0; i < POPULATION_SIZE; i++) {
-        unsigned int random_value = rand() % (MAX_INDIVIDUAL_SIZE - MIN_INDIVIDUAL_SIZE + 1) 
+        int random_value = rand() % (MAX_INDIVIDUAL_SIZE - MIN_INDIVIDUAL_SIZE + 1) 
         + MIN_INDIVIDUAL_SIZE;
         // Init
         initial_population[i] = bitset<POPULATION_BITS>(random_value);
         // Evaluation
-        unsigned int value = get_value(initial_population[i]);
-        unsigned int aptitude = calculate_aptitude(value);
+        int value = get_value(initial_population[i]);
+        float aptitude = calculate_aptitude(value);
         total += aptitude; 
     }
     for (int j = 0; j < NUM_GENERATIONS; j++) {
@@ -273,28 +273,28 @@ int main(int argc, char *argv[]) {
         sort_individuals(initial_population);
         for (int i = 0, j = 0; i < POPULATION_SIZE; i+=2, j++) {
             descendancy[j] = tournament_selection(initial_population[i], initial_population[i + 1]);
-            cout << initial_population[i] << " - " << initial_population[i + 1] 
-            << " = " << descendancy[j] << endl;
+            // cout << initial_population[i] << " - " << initial_population[i + 1] 
+            // << " = " << descendancy[j] << endl;
         }
         sort_individuals(initial_population);
         for (int i = 0, j = POPULATION_SIZE / 2; i < POPULATION_SIZE; i+=2, j++) {
             descendancy[j] = tournament_selection(initial_population[i], initial_population[i + 1]);
-            cout << initial_population[i] << " - " << initial_population[i + 1] 
-            << " = " << descendancy[j] << endl;
+            // cout << initial_population[i] << " - " << initial_population[i + 1] 
+            // << " = " << descendancy[j] << endl;
         }
 
         // Next Generation
         cout << endl;
         for (int i = 0; i < POPULATION_SIZE; i++) {
             initial_population[i] = descendancy[i];
-            cout << initial_population[i] << endl;
+            // cout << initial_population[i] << endl;
         }
-        cout << endl;
+        // cout << endl;
 
         // Cross and Mutation
         // Mutar aleatoriamente el individuo
-        unsigned int num_indiv_mutar = POPULATION_SIZE / MUTATION_PROBABILITY;
-        unsigned int mutations[num_indiv_mutar];
+        int num_indiv_mutar = POPULATION_SIZE / MUTATION_PROBABILITY;
+        int mutations[num_indiv_mutar];
         total = 0;
         for (int i = 0; i < num_indiv_mutar; i++) {
             mutations[i] = rand() % (POPULATION_SIZE + 1);
@@ -311,10 +311,10 @@ int main(int argc, char *argv[]) {
                 descendancy[i + 1] = mutate(descendancy[i + 1]);
             }
             // Evaluation
-            unsigned int value1 = get_value(descendancy[i]);
-            unsigned int value2 = get_value(descendancy[i + 1]);
-            unsigned int aptitude1 = calculate_aptitude(value1);
-            unsigned int aptitude2 = calculate_aptitude(value2);
+            int value1 = get_value(descendancy[i]);
+            int value2 = get_value(descendancy[i + 1]);
+            float aptitude1 = calculate_aptitude(value1);
+            float aptitude2 = calculate_aptitude(value2);
             total += aptitude1 + aptitude2; 
         }
         
