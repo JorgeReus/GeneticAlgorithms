@@ -7,6 +7,7 @@
 #include "partially_mapped_crossover.h"
 #include "position_based_crossover.h"
 #include "order_based_crossover.h"
+#include "cycle_crossover.h"
 
 void initialize_population(std::vector<int> initial_population[]);
 
@@ -22,8 +23,10 @@ int main(int argc, char *argv[]) {
     // partially_mapped_crossover(initial_population, crossed_population);
     // std::cout << std::endl << "POSITION BASED CROSS-OVER" << std::endl << std::endl;
     // position_based_crossover(initial_population, crossed_population);
-    std::cout << std::endl << "ORDER BASED CROSS-OVER" << std::endl << std::endl;
-    order_based_crossover(initial_population, crossed_population);
+    // std::cout << std::endl << "ORDER BASED CROSS-OVER" << std::endl << std::endl;
+    // order_based_crossover(initial_population, crossed_population);
+    std::cout << std::endl << "CYCLE CROSS-OVER" << std::endl << std::endl;
+    cycle_crossover(initial_population, crossed_population);
     return 0;
 }
 
