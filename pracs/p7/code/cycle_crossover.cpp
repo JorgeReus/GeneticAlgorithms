@@ -90,12 +90,6 @@ void remove_elements_cycle(std::unordered_set<int> &cycle, std::vector<int> &v, 
 }
 
 void cycle_crossover(std::vector<int> initial_population[], std::vector<int> new_population[]) {
-    int arr1[12] = {8, 11, 3, 5, 6, 4, 2, 12, 1, 9, 7, 10};
-    int arr2[12] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-    for (int i = 0; i < 12; i++) {
-        initial_population[0][i] = arr1[i];
-        initial_population[1][i] = arr2[i];
-    }
     for (int i = 0 ; i < POPULATION_SIZE; i+=2) {
         std::vector<int> p1 = initial_population[i];
         std::vector<int> p2 = initial_population[i + 1];
